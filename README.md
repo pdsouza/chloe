@@ -2,11 +2,11 @@
 
 A simple, composable static site generator for Clojurists.
 
-**chloe is in the very early stages right now and documentation / examples are sparse—this will improve soon!**
-
 ## Usage
 
-Chloe is designed to be un-opinionated: it's basically a lean set of small, yet sharp, functions that make building static sites in Clojure a joy. That being said, here are some common usages of Chloe.
+**chloe is in the very early stages right now and documentation / examples are sparse—this will improve soon!**
+
+Chloe consists of a lean set of sharp functions that make building static sites in Clojure a joy. Here are some common ways to build sites with Chloe.
 
 ### Structure
 
@@ -87,9 +87,16 @@ For live development, you can set up a Ring handler by passing your build functi
 (def dev (chloe/ring-serve build))
 ```
 
+## Prior Art
+
+Thanks to:
+
+ * [Metalsmith](https://github.com/segmentio/metalsmith) for the insight that static site generators are simply a sequence of pluggable transformations applied to site content
+ * [Stasis](https://github.com/magnars/stasis) for the observation that coding in Clojure is more fun than learning and editing framework-specific configuration
+ * [perun](https://github.com/hashobject/perun) for early inspiration on mapping Metalsmith's design to Clojure
+
 ## License
 
 Copyright © 2019 Preetam J. D'Souza
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
