@@ -33,7 +33,7 @@ The only real requirement at the moment is that your partial content (simple con
 
 Next, make use of Chloe to build your site:
 
-```
+```clojure
 (defn build []
   (->> (chloe/get-sitemap)
        (frontmatter)
@@ -48,7 +48,7 @@ Next, make use of Chloe to build your site:
 
 When you want to export your site, just use `chloe/export`:
 
-```
+```clojure
 (defn export-site []
   (->> (build)
        (chloe/export "out")))
@@ -56,7 +56,7 @@ When you want to export your site, just use `chloe/export`:
 
 For live development, you can set up a Ring handler by passing your build function to `chloe/ring-serve`:
 
-```
+```clojure
 (def app (chloe/ring-serve build))
 ```
 
