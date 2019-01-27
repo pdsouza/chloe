@@ -37,10 +37,6 @@
       (map-files (juxt #(relative-path-to dir (.getPath %)) asset-to-page))
       (into {})))
 
-(defn get-sitemap []
-  (merge (content "resources/partials")
-         (assets "resources/public")))
-
 (defn export [export-dir pages]
   (doseq [[path page] pages]
     (let [file (if (str/ends-with? path "/")
