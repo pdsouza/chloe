@@ -1,4 +1,4 @@
-# chloe
+# Chloe
 
 A simple, composable static site generator for Clojurists.
 
@@ -6,18 +6,24 @@ A simple, composable static site generator for Clojurists.
 
 ## Usage
 
-*Note: Chloe is designed to be un-opinionated—it's basically a bunch of small, yet sharp, functions that make building static sites in Clojure a joy. Just keep in mind that you may discover better ways of using Chloe in your projects than what is listed here.*
+Chloe is designed to be un-opinionated: it's basically a lean set of small, yet sharp, functions that make building static sites in Clojure a joy. That being said, here are some common usages of Chloe.
 
-To get started, create a directory structure that represents your site:
+### Structure
+
+Websites map very nicely to directory structures, so let's create one that represents your site.
+
+Here's a sample layout:
 
 ```
 resources/
   partials/
     post/
       chloe-is-awesome.md
-      clojure-notes.md
-    public/
-      main.css
+      chloe-is-cool.md
+  public/
+    main.css
+    images/
+      chloe-architecture.jpg
 src/
   my-site/
     page/
@@ -27,15 +33,30 @@ src/
     layouts.clj
 ```
 
+In this layout, partial content (simple text-focused content that will likely be transformed, laid out, etc. like markdown blog posts for example) is placed in `resources/partials` and assets (stuff that will be reflected exactly over to your site without any intermediate transforms) are placed in `resources/public`.
+
 Notice how this structure is exactly the same as a standard Clojure project. That means you can work on your website using all the Clojure tooling that you know and love, like Leiningen.
 
-The only real requirement at the moment is that your partial content (simple content that will be transformed, laid out, etc. like markdown blog posts for example) is placed in `resources/partials` and your assets are placed in `resources/public`.
+### Build
 
-Next, make use of Chloe to build your site:
+Now, let's tap into Chloe to build your site:
 
 ```clojure
+(ns my-site.core
+  (:require [chloe.core :as chloe]
+            [chloe.plugin.frontmatter :refer :all]
+            [chloe.plugin.drafts :refer :all]
+            [chloe.plugin.markdown :refer :all]
+            [chloe.plugin.pretty-urls :refer :all]
+            [chloe.plugin.pages :refer :all]
+            [chloe.plugin.layout :refer :all])
+  (:require [my-site.page.index :as index]
+            [my-site.page.about :as about]
+            [my-site.layouts :as layouts]))
+
 (defn build []
-  (->> (chloe/get-sitemap)
+  (->> (chloe/content "resources/partials")
+       (merge (chloe/assets "resources/public"))
        (frontmatter)
        (remove-drafts)
        (markdown)
@@ -46,18 +67,24 @@ Next, make use of Chloe to build your site:
                 ".*" layouts/default})))
 ```
 
+As you can see, building your site is as simple as threading together Chloe functions that transform your site's content.
+
+### Export
+
 When you want to export your site, just use `chloe/export`:
 
 ```clojure
-(defn export-site []
+(defn export []
   (->> (build)
        (chloe/export "out")))
 ```
 
+### Develop Live
+
 For live development, you can set up a Ring handler by passing your build function to `chloe/ring-serve`:
 
 ```clojure
-(def app (chloe/ring-serve build))
+(def dev (chloe/ring-serve build))
 ```
 
 ## License
