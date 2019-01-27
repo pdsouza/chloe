@@ -87,6 +87,12 @@ For live development, you can set up a Ring handler by passing your build functi
 (def dev (chloe/ring-serve build))
 ```
 
+## Examples
+
+The following sites are built with Chloe:
+
+ * [preetam.io](https://preetam.io/)
+
 ## Prior Art
 
 Thanks to:
