@@ -1,6 +1,8 @@
 # Chloe
 
-A simple, composable static site generator for Clojurists.
+[![Clojars Project](https://img.shields.io/clojars/v/chloe.svg)](https://clojars.org/chloe)
+
+A simple, composable static site generator for Clojure.
 
 ## Usage
 
