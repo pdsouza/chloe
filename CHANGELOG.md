@@ -11,4 +11,4 @@ All notable changes to this project will be documented in this file. This change
 Initial release!
 
 
-[Unreleased]: https://github.com/your-name/chloe/compare/0.1.0...HEAD
+[Unreleased]: https://github.com/pdsouza/chloe/compare/v0.1.0...HEAD
