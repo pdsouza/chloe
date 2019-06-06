@@ -12,4 +12,5 @@
 
 (defn layout [patterns site]
   (-> site
-      (update :content #(map (fn [resource] (do-layout patterns resource)) %))))
+      (update :content #(map (fn [resource] (do-layout patterns resource)) %))
+      (update :pages #(map (fn [resource] (do-layout patterns resource)) %))))
