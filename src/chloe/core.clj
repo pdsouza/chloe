@@ -43,14 +43,16 @@
   (update site :assets (fn [prev-assets]
                           (concat prev-assets (slurp-assets dir)))))
 
-(defn render-pages
-  "Render site pages."
-  [pages site]
+(defn render-pages [pages site]
   (map (fn [[url, render-fn]] {:url url :content (render-fn site)})
        pages))
 
 (defn ingest-pages [pages site]
   (update site :pages #(concat % (render-pages pages site))))
+
+(defn plug
+  "Apply a plugin."
+  [plugin-fn & args] (apply plugin-fn args))
 
 (defn gather-resources
   "Return a flat seq of all resources for a site."
