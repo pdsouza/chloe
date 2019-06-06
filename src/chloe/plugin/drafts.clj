@@ -1,8 +1,9 @@
 (ns chloe.plugin.drafts)
 
+(defn draft? [page]
+  (not= true (get page :draft)))
+
 (defn remove-drafts
   "Remove draft pages."
-  [pages]
-  (->> pages
-      (filter (fn [[path page]] (not= true (get page :draft))))
-      (into {})))
+  [site]
+  (update site :content #(filter draft? %)))

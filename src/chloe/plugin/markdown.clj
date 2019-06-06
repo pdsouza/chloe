@@ -4,11 +4,14 @@
 
 (defn markdown? [s] (re-find #".*\.md$" s))
 
-(defn markdown [pages]
-  (->> (map (fn [[path page]]
-              (if (markdown? path)
-                  [(str/replace path #"\.md$" ".html")
-                   (assoc page :content (md/to-html (page :content) [:fenced-code-blocks :tables]))]
-                  [path page]))
-            pages)
-       (into {})))
+(defn markdown-page [page]
+  (if (markdown? (page :url))
+    (assoc page :url (str/replace (page :url) #"\.md$" ".html")
+                :content (md/to-html (page :content)
+                                     [:fenced-code-blocks :tables]))
+    page))
+
+(defn markdown
+  "Compile markdown content to HTML."
+  [site]
+  (update site :content #(map markdown-page %)))

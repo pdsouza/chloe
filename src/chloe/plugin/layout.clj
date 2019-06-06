@@ -5,15 +5,11 @@
        (first)
        (get patterns)))
 
-(defn select-layout [patterns path]
-  (if-let [layout-fn (find-layout patterns path)]
-    layout-fn
-    identity))
+(defn do-layout [patterns resource]
+  (if-let [layout-fn (find-layout patterns (resource :url))]
+    (assoc resource :content (layout-fn resource))
+    resource))
 
-(defn layout [patterns pages]
-  (->> (map (fn [[path page]]
-              (if (contains? page :content)
-                  [path (assoc page :content ((select-layout patterns path) page))]
-                  [path page]))
-            pages)
-        (into {})))
+(defn layout [patterns site]
+  (-> site
+      (update :content #(map (fn [resource] (do-layout patterns resource)) %))))
