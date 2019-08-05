@@ -2,8 +2,14 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [ring.middleware.resource :refer [wrap-resource]]
-            [ring.middleware.content-type :refer [wrap-content-type]]))
-
+            [ring.middleware.content-type :refer [wrap-content-type]])
+  (:require [chloe.plugin.markdown :refer [markdown]]
+            [chloe.plugin.frontmatter :refer [frontmatter]]
+            [chloe.plugin.drafts :refer [drafts]]
+            [chloe.plugin.pages :refer [add-pages]]
+            [chloe.plugin.pretty-urls :refer [pretty-urls]]
+            [chloe.plugin.opengraph :refer [opengraph]]
+            [chloe.plugin.layout :refer [layout]]))
 ; ------------------------------------------------------------------------------
 ; fs
 
@@ -29,39 +35,89 @@
    :src-path (.getPath file)
    :modified (last-modified file)})
 
+(defn path-to-lib [path]
+  (-> path
+      (str/replace #"\..*$" "")
+      (str/replace "src/" "")
+      (str/replace "/" ".")
+      (str/replace "_" "-")))
+
+(defn load-render-fn [lib]
+  (require (symbol lib))
+  (resolve (symbol (str lib "/render"))))
+
+(defn clj-to-page [root-dir file]
+  {:url (relative-path-to root-dir (-> file .getPath (str/replace "_" "-")))
+   :modified (last-modified file)
+   :render-fn (load-render-fn (-> file .getPath path-to-lib))})
+
+(defn clj? [path] (re-find #".*\.clj$" path))
+
 (defn slurp-content [dir]
-  (map-files #(content-to-page dir %) dir))
+  (map-files #(if (clj? (.getPath %))
+                  (clj-to-page dir %)
+                  (content-to-page dir %))
+             dir))
 
 (defn slurp-assets [dir]
   (map-files #(asset-to-page dir %) dir))
 
-(defn ingest-content [dir site]
-  (update site :content (fn [prev-content]
-                          (concat prev-content (slurp-content dir)))))
+(defn ingest-pages [dir]
+  (slurp-content dir))
 
 (defn ingest-assets [dir site]
   (update site :assets (fn [prev-assets]
                           (concat prev-assets (slurp-assets dir)))))
 
-(defn render-pages [pages site]
-  (map (fn [[url, render-fn]] {:url url :content (render-fn site)})
-       pages))
+(defn clean [url]
+  (-> url
+      (str/replace #"\..*$" "/")
+      (str/replace #"index/" "")))
 
-(defn ingest-pages [pages site]
-  (update site :pages #(concat % (render-pages pages site))))
-
-(defn plug
-  "Apply a plugin."
-  [plugin-fn & args] (apply plugin-fn args))
+(defn render-pages [site]
+  (update site :content
+    #(map (fn [page]
+            (if (clj? (page :url))
+                (assoc page :url (clean (page :url))
+                            :content ((page :render-fn) site))
+                page))
+          %)))
 
 (defn gather-resources
   "Return a flat seq of all resources for a site."
   [site]
   (reduce concat (vals (select-keys site [:content :assets :pages]))))
 
-(defn build [site] ((site :build-fn) site))
+(defn project-pages-path
+  "Return the project path where pages reside."
+  [project-name]
+  (str "src/" project-name "/page"))
 
-(defn export 
+(defn ingest [site]
+  (assoc site :content (slurp-content (project-pages-path (site :project-name)))
+              :assets  (slurp-assets (site :asset-path))))
+
+(defn compl [& fs]
+  "Compose a seq of functions in left-to-right order."
+  (apply comp (reverse fs)))
+
+(defn partialize-plugins [ps]
+  ; TODO multiple arg matches
+  (map (fn [[f & args]] (if args (apply partial f args) f)) ps))
+
+(defn compl-plugins [ps]
+  (apply compl (partialize-plugins ps)))
+
+(defn build [site]
+  (->> site
+       (ingest)
+       (frontmatter)
+       (markdown)
+       (drafts)
+       (render-pages)
+       ((compl-plugins (site :plugins)))))
+
+(defn export
   "Spit out a site to :export-path."
   [site]
   (doseq [resource (gather-resources (build site))]
