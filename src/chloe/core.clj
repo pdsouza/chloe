@@ -46,8 +46,12 @@
   (require (symbol lib))
   (resolve (symbol (str lib "/render"))))
 
+(defn unnsify [s]
+  "Convert namespace-safe names back to normal."
+  (str/replace s "_" "-"))
+
 (defn clj-to-page [root-dir file]
-  {:url (relative-path-to root-dir (-> file .getPath (str/replace "_" "-")))
+  {:url (unnsify (relative-path-to root-dir (.getPath file)))
    :modified (last-modified file)
    :render-fn (load-render-fn (-> file .getPath path-to-lib))})
 
