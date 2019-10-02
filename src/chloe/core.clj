@@ -118,6 +118,7 @@
        (frontmatter)
        (markdown)
        (drafts)
+       (pretty-urls)
        (render-pages)
        ((compl-plugins (site :plugins)))))
 
