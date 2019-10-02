@@ -2,7 +2,7 @@
   (:require [clojure.string :as str]))
 
 (defn prettify [path]
-  (str/replace path #"\.html$" "/index.html"))
+  (str/replace path #"\.html$" "/"))
 
 (defn pretty-urls
   "Transform standard URLs to \"pretty\" URLs by rewriting file extensions.
