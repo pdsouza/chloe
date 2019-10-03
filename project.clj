@@ -1,4 +1,4 @@
-(defproject chloe "0.2.0-SNAPSHOT"
+(defproject chloe "0.3.0-SNAPSHOT"
   :description "A simple, composable static site generator for Clojure."
   :url "https://github.com/pdsouza/chloe"
   :license {:name "Eclipse Public License"
