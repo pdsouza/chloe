@@ -14,4 +14,4 @@
 (defn markdown
   "Compile markdown content to HTML."
   [site]
-  (update site :content #(map markdown-page %)))
+  (update site :partials #(map markdown-page %)))

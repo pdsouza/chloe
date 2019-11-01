@@ -29,7 +29,7 @@
 (defn opengraph
   "Add OpenGraph support to pages."
   [site]
-  (update site :content #(map (fn [page]
+  (update site :partials #(map (fn [page]
                                 (if (html? (page :url)) 
                                   (inject-tags page (site :url))
                                   page))

@@ -6,4 +6,4 @@
 (defn drafts
   "Remove draft pages."
   [site]
-  (update site :content #(filter draft? %)))
+  (update site :partials #(filter draft? %)))

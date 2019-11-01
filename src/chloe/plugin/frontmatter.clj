@@ -11,10 +11,10 @@
 (defn parse-frontmatter [frontmatter] (yaml/parse-string frontmatter))
 
 (defn frontmatter [site]
-  (->> (site :content)
+  (->> (site :partials)
        (map (fn [page]
             (let [[frontmatter content] (split-frontmatter (page :content))]
               (if (some? frontmatter)
                   (merge page (parse-frontmatter frontmatter) {:content content})
                   page))))
-       (assoc site :content)))
+       (assoc site :partials)))

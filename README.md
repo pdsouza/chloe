@@ -4,9 +4,27 @@
 
 A simple, composable static site generator for Clojure.
 
-## Usage
-
 **chloe is in the very early stages right now and documentation / examples are sparse—this will improve soon!**
+
+## Concepts
+
+### Content Types
+
+#### Page
+
+A Clojure file that renders HTML. Pages can depend on partial resources.
+
+This is where the real power of Chloe lies since you can generate your HTML using Clojure itself and all the power it provides—no need to squeeze yourself into a templating language's confines.
+
+#### Partial
+
+A standalone piece of content that will likely be transformed, laid out, etc. like a markdown blog post.
+
+#### Asset
+
+A pre-rendered file that bypasses processing.
+
+## Usage
 
 Chloe consists of a lean set of sharp functions that make building static sites in Clojure a joy. Here are some common ways to build sites with Chloe.
 
@@ -44,41 +62,30 @@ Notice how this structure is exactly the same as a standard Clojure project. Tha
 Now, let's tap into Chloe to build your site:
 
 ```clojure
-(ns my-site.core
-  (:require [chloe.core :as chloe]
-            [chloe.plugin.frontmatter :refer :all]
-            [chloe.plugin.drafts :refer :all]
-            [chloe.plugin.markdown :refer :all]
-            [chloe.plugin.pretty-urls :refer :all]
-            [chloe.plugin.pages :refer :all]
-            [chloe.plugin.layout :refer :all])
-  (:require [my-site.page.index :as index]
-            [my-site.page.about :as about]
-            [my-site.layouts :as layouts]))
+(ns preetam.core
+  (:require [chloe.core :as c]
+            [chloe.plugin.layout :refer [layout]]
+            [preetam.layouts :as layouts]))
 
-(defn build []
-  (->> (chloe/content "resources/partials")
-       (merge (chloe/assets "resources/public"))
-       (frontmatter)
-       (remove-drafts)
-       (markdown)
-       (prettify-urls)
-       (add-pages {"/" index/render
-                   "/about/" about/render})
-       (layout {"/post/.*" layouts/post
-                ".*" layouts/default})))
+(def site
+  {:url "https://preetam.io"
+   :title "Preetam D'Souza"
+   :asset-path "resources/public"
+   :project-name "preetam"
+   :export-path "_site"
+   :plugins [[layout {"/post/.+" layouts/post}]]})
+
+(def ring-handler (c/ring-serve site))
 ```
 
-As you can see, building your site is as simple as threading together Chloe functions that transform your site's content.
+As you can see, building your site is as simple as declaring your site structure in a Clojure map.
 
 ### Export
 
 When you want to export your site, just use `chloe/export`:
 
 ```clojure
-(defn export []
-  (->> (build)
-       (chloe/export "out")))
+(defn export [] (c/export site))
 ```
 
 ### Develop Live
@@ -86,8 +93,12 @@ When you want to export your site, just use `chloe/export`:
 For live development, you can set up a Ring handler by passing your build function to `chloe/ring-serve`:
 
 ```clojure
-(def dev (chloe/ring-serve build))
+(def ring-handler (c/ring-serve site))
 ```
+
+Run a development server with:
+
+    $ lein ring server
 
 ## Examples
 

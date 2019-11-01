@@ -16,21 +16,33 @@
 (defn last-modified [file] (java.util.Date. (.lastModified file)))
 (defn relative-path-to [dir path] (str/replace path dir ""))
 
-(defn map-files
-  "Map files in a directory."
+(defn filter-dir
+  "Filter all files in a directory, including subdirectory nodes."
   [f dir]
   (->> dir
        (io/as-file)
        (file-seq)
-       (filter #(.isFile %))
+       (filter f)))
+
+(defn filter-files [f dir]
+  "Filter files in a directory."
+  (->> dir
+       (filter-dir #(.isFile %))
+       (filter f)))
+
+(defn map-files
+  "Map files in a directory."
+  [f dir]
+  (->> dir
+       (filter-dir #(.isFile %))
        (map f)))
 
-(defn content-to-page [root-dir file]
+(defn partial-to-res [root-dir file]
   {:url (relative-path-to root-dir (.getPath file))
    :content (slurp file)
    :modified (last-modified file)})
 
-(defn asset-to-page [root-dir file]
+(defn asset-to-res [root-dir file]
   {:url (relative-path-to root-dir (.getPath file))
    :src-path (.getPath file)
    :modified (last-modified file)})
@@ -50,47 +62,40 @@
   "Convert namespace-safe names back to normal."
   (str/replace s "_" "-"))
 
-(defn clj-to-page [root-dir file]
-  {:url (unnsify (relative-path-to root-dir (.getPath file)))
+(defn clean [url]
+  (-> url
+      (str/replace #"\..*$" ".html")))
+
+(defn clj-to-res [root-dir file]
+  {:url (clean (unnsify (relative-path-to root-dir (.getPath file))))
    :modified (last-modified file)
    :render-fn (load-render-fn (-> file .getPath path-to-lib))})
 
 (defn clj? [path] (re-find #".*\.clj$" path))
 
-(defn slurp-content [dir]
-  (map-files #(if (clj? (.getPath %))
-                  (clj-to-page dir %)
-                  (content-to-page dir %))
-             dir))
+(defn slurp-pages [dir]
+  (->> dir
+       (filter-dir #(clj? (.getPath %)))
+       (map #(clj-to-res dir %))))
+
+(defn slurp-partials [dir]
+  (->> dir
+       (filter-files #(not (clj? (.getPath %))))
+       (map #(partial-to-res dir %))))
 
 (defn slurp-assets [dir]
-  (map-files #(asset-to-page dir %) dir))
-
-(defn ingest-pages [dir]
-  (slurp-content dir))
-
-(defn ingest-assets [dir site]
-  (update site :assets (fn [prev-assets]
-                          (concat prev-assets (slurp-assets dir)))))
-
-(defn clean [url]
-  (-> url
-      (str/replace #"\..*$" "/")
-      (str/replace #"index/" "")))
+  (map-files #(asset-to-res dir %) dir))
 
 (defn render-pages [site]
-  (update site :content
+  (update site :pages
     #(map (fn [page]
-            (if (clj? (page :url))
-                (assoc page :url (clean (page :url))
-                            :content ((page :render-fn) site))
-                page))
+            (assoc page :content ((page :render-fn) site)))
           %)))
 
 (defn gather-resources
   "Return a flat seq of all resources for a site."
   [site]
-  (reduce concat (vals (select-keys site [:content :assets :pages]))))
+  (reduce concat (vals (select-keys site [:pages :partials :assets]))))
 
 (defn project-pages-path
   "Return the project path where pages reside."
@@ -98,7 +103,8 @@
   (str "src/" project-name "/page"))
 
 (defn ingest [site]
-  (assoc site :content (slurp-content (project-pages-path (site :project-name)))
+  (assoc site :pages (slurp-pages (project-pages-path (site :project-name)))
+              :partials (slurp-partials "resources/partials")
               :assets  (slurp-assets (site :asset-path))))
 
 (defn compl [& fs]
