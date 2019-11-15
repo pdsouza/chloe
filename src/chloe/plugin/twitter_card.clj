@@ -22,6 +22,7 @@
     ; twitter:image requires an absolute path
     [:head] (html/append (twitter-meta-tag "twitter:image" (when-let [img (page :image)]
                                                              (str base-url img))))
+    [:head] (html/append (twitter-meta-tag "twitter:image:alt" (page :image-alt)))
     [:head] (html/append (twitter-meta-tag "twitter:card" "summary")))
   (assoc page :content (apply str (template))))
 

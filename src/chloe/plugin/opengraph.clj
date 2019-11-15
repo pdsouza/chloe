@@ -23,7 +23,8 @@
     [:head] (html/append (og-meta-tag "og:description" (page :description)))
     ; og:image requires an absolute path
     [:head] (html/append (og-meta-tag "og:image" (when-let [img (page :image)]
-                                                   (str base-url img)))))
+                                                   (str base-url img))))
+    [:head] (html/append (og-meta-tag "og:image:alt" (page :image-alt))))
   (assoc page :content (apply str (template))))
 
 (defn opengraph
