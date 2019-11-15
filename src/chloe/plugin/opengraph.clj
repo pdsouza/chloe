@@ -22,7 +22,7 @@
     [:head] (html/append (og-meta-tag "og:title" (page :title)))
     [:head] (html/append (og-meta-tag "og:description" (page :description)))
     ; og:image requires an absolute path
-    [:head] (html/append (og-meta-tag "og:image" (when-let [img (page :ogImage)]
+    [:head] (html/append (og-meta-tag "og:image" (when-let [img (page :image)]
                                                    (str base-url img)))))
   (assoc page :content (apply str (template))))
 
