@@ -17,20 +17,27 @@
   [page base-url]
   (html/deftemplate template (java.io.StringReader. (page :content))
     []
-    [:head] (html/append (twitter-meta-tag "twitter:title" (page :title)))
-    [:head] (html/append (twitter-meta-tag "twitter:description" (page :description)))
+    [:head] (html/append (twitter-meta-tag "twitter:title"
+                                           (page :title)))
+    [:head] (html/append (twitter-meta-tag "twitter:description"
+                                           (page :description)))
     ; twitter:image requires an absolute path
-    [:head] (html/append (twitter-meta-tag "twitter:image" (when-let [img (page :image)]
-                                                             (str base-url img))))
-    [:head] (html/append (twitter-meta-tag "twitter:image:alt" (page :image-alt)))
-    [:head] (html/append (twitter-meta-tag "twitter:card" "summary")))
+    [:head] (html/append (twitter-meta-tag "twitter:image"
+                                           (when-let [img (page :image)]
+                                             (str base-url img))))
+    [:head] (html/append (twitter-meta-tag "twitter:image:alt"
+                                           (page :image-alt)))
+    [:head] (html/append (twitter-meta-tag "twitter:card"
+                                           (if-let [card-type (page :twitter-card)]
+                                             card-type
+                                             "summary"))))
   (assoc page :content (apply str (template))))
 
 (defn twitter-card
   "Add Twitter Card support to pages."
   [site]
   (update site :partials #(map (fn [page]
-                                (if (html? (page :url))
-                                  (inject-tags page (site :url))
-                                  page))
-                              %)))
+                                 (if (html? (page :url))
+                                   (inject-tags page (site :url))
+                                   page))
+                               %)))
