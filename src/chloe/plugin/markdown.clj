@@ -1,5 +1,5 @@
 (ns chloe.plugin.markdown
-  (:require [me.raynes.cegdown :as md]
+  (:require [markdown.core :as markdown]
             [clojure.string :as str]))
 
 (defn markdown? [s] (re-find #".*\.md$" s))
@@ -7,8 +7,7 @@
 (defn markdown-page [page]
   (if (markdown? (page :url))
     (assoc page :url (str/replace (page :url) #"\.md$" ".html")
-                :content (md/to-html (page :content)
-                                     [:fenced-code-blocks :tables]))
+           :content (markdown/md-to-html-string (page :content)))
     page))
 
 (defn markdown

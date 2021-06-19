@@ -5,6 +5,6 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [ring "1.7.1"]
-                 [me.raynes/cegdown "0.1.1"]
+                 [markdown-clj "1.10.5"]
                  [io.forward/yaml "1.0.10"]
                  [enlive "1.1.6"]])
